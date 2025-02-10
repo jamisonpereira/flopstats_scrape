@@ -1,0 +1,253 @@
+[
+    {
+        "home_team": "Chelsea FC",
+        "away_team": "Nottingham Forest",
+        "league": "Premier League",
+        "year": 2024,
+        "week": 7,
+        "location": "Stamford Bridge (London)",
+        "date": {
+            "month": 10,
+            "day": 6,
+            "year": 2024
+        },
+        "score": {
+            "home": 1,
+            "away": 1
+        },
+        "goals": {
+            "home": [
+                {
+                    "player": "Madueke",
+                    "minute": "57'"
+                }
+            ],
+            "away": [
+                {
+                    "player": "Wood",
+                    "minute": "49'"
+                }
+            ]
+        },
+        "video_links": [
+            "https://videos.footballia.net/uploads/video/source_file/68269/2024-25_Chelsea_-_Forest_-_1.mp4",
+            "https://videos.footballia.net/uploads/video/source_file/68270/2024-25_Chelsea_-_Forest_-_2.mp4"
+        ],
+        "competitors": {
+            "home": {
+                "starters": [
+                    {
+                        "country": "Spain",
+                        "number": "1",
+                        "name": "Sánchez",
+                        "age": "26"
+                    },
+                    {
+                        "country": "Spain",
+                        "number": "3",
+                        "name": "Cucurella",
+                        "age": "26"
+                    },
+                    {
+                        "country": "England",
+                        "number": "6",
+                        "name": "Colwill",
+                        "age": "21"
+                    },
+                    {
+                        "country": "Argentina",
+                        "number": "8",
+                        "name": "E. Fernández",
+                        "age": "23"
+                    },
+                    {
+                        "country": "England",
+                        "number": "11",
+                        "name": "Madueke",
+                        "age": "22"
+                    },
+                    {
+                        "country": "Senegal",
+                        "number": "15",
+                        "name": "Jackson",
+                        "age": "23"
+                    },
+                    {
+                        "country": "England",
+                        "number": "19",
+                        "name": "Sancho",
+                        "age": "24"
+                    },
+                    {
+                        "country": "England",
+                        "number": "20",
+                        "name": "Palmer",
+                        "age": "22"
+                    },
+                    {
+                        "country": "Ecuador",
+                        "number": "25",
+                        "name": "Caicedo",
+                        "age": "22"
+                    },
+                    {
+                        "country": "France",
+                        "number": "27",
+                        "name": "Gusto",
+                        "age": "21"
+                    },
+                    {
+                        "country": "France",
+                        "number": "29",
+                        "name": "Fofana",
+                        "age": "23"
+                    }
+                ],
+                "substitutes": [
+                    {
+                        "country": "England",
+                        "number": "4",
+                        "name": "Adarabioyo",
+                        "age": "27"
+                    },
+                    {
+                        "country": "Portugal",
+                        "number": "7",
+                        "name": "P. Neto",
+                        "age": "24"
+                    },
+                    {
+                        "country": "Ukraine",
+                        "number": "10",
+                        "name": "Mudryk",
+                        "age": "23"
+                    },
+                    {
+                        "country": "Portugal",
+                        "number": "14",
+                        "name": "João Félix",
+                        "age": "24"
+                    },
+                    {
+                        "country": "France",
+                        "number": "18",
+                        "name": "Nkunku",
+                        "age": "26"
+                    }
+                ],
+                "coach": {
+                    "name": "Maresca",
+                    "country": "Italy",
+                    "age": "44"
+                }
+            },
+            "away": {
+                "starters": [
+                    {
+                        "country": "Belgium",
+                        "number": "26",
+                        "name": "Sels",
+                        "age": "32"
+                    },
+                    {
+                        "country": "Brazil",
+                        "number": "5",
+                        "name": "Murillo",
+                        "age": "22"
+                    },
+                    {
+                        "country": "England",
+                        "number": "8",
+                        "name": "Anderson",
+                        "age": "21"
+                    },
+                    {
+                        "country": "England",
+                        "number": "10",
+                        "name": "Gibbs-White",
+                        "age": "24"
+                    },
+                    {
+                        "country": "New Zealand",
+                        "number": "11",
+                        "name": "Wood",
+                        "age": "32"
+                    },
+                    {
+                        "country": "England",
+                        "number": "14",
+                        "name": "Hudson-Odoi",
+                        "age": "23"
+                    },
+                    {
+                        "country": "England",
+                        "number": "18",
+                        "name": "Ward-Prowse",
+                        "age": "29"
+                    },
+                    {
+                        "country": "Spain",
+                        "number": "19",
+                        "name": "Álex Moreno",
+                        "age": "31"
+                    },
+                    {
+                        "country": "England",
+                        "number": "22",
+                        "name": "Yates",
+                        "age": "26"
+                    },
+                    {
+                        "country": "Serbia",
+                        "number": "31",
+                        "name": "Milenković",
+                        "age": "26"
+                    },
+                    {
+                        "country": "Nigeria",
+                        "number": "34",
+                        "name": "Aina",
+                        "age": "27"
+                    }
+                ],
+                "substitutes": [
+                    {
+                        "country": "Brazil",
+                        "number": "4",
+                        "name": "Morato",
+                        "age": "23"
+                    },
+                    {
+                        "country": "Wales",
+                        "number": "7",
+                        "name": "Williams",
+                        "age": "23"
+                    },
+                    {
+                        "country": "Argentina",
+                        "number": "16",
+                        "name": "Domínguez",
+                        "age": "26"
+                    },
+                    {
+                        "country": "Portugal",
+                        "number": "20",
+                        "name": "Jota",
+                        "age": "25"
+                    },
+                    {
+                        "country": "Sweden",
+                        "number": "21",
+                        "name": "Elanga",
+                        "age": "22"
+                    }
+                ],
+                "coach": {
+                    "name": "Nuno",
+                    "country": "Portugal",
+                    "age": "50"
+                }
+            }
+        }
+    }
+]
