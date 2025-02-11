@@ -9,3 +9,4 @@ venv.bak/
 
 # directories
 videos/
+.DS_Store
