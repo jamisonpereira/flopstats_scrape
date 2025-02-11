@@ -3,20 +3,17 @@ from bs4 import BeautifulSoup
 import json
 from datetime import datetime
 import re
-from selenium import webdriver
-from selenium.webdriver.chrome.service import Service
-from selenium.webdriver.common.by import By
-from selenium.webdriver.support.ui import WebDriverWait
-from selenium.webdriver.support import expected_conditions as EC
-from selenium.webdriver.chrome.options import Options
-from selenium.webdriver.common.action_chains import ActionChains
-import time
 from dotenv import load_dotenv
 import os
-from video_scraper import extract_video_links
+from video_scraper import extract_video_links, initialize_driver, is_driver_alive
+from selenium import webdriver
+from selenium.webdriver.chrome.service import Service
+from selenium.webdriver.chrome.options import Options
+
 
 # Load environment variables from .env file
 load_dotenv()
+
 
 chrome_driver_path = os.getenv("CHROME_DRIVER_PATH")
 
@@ -27,14 +24,19 @@ headers = {
 
 # List of Footballia match URLs
 pages = [
-    "https://footballia.eu/matches/chelsea-fc-nottingham-forest-premier-league-2024-2025"
+    "https://footballia.eu/matches/tottenham-hotspur-liverpool-fc-premier-league-2024-2025",
+    "https://footballia.eu/matches/chelsea-fc-nottingham-forest-premier-league-2024-2025",
     # Add more pages here...
 ]
 
+# List to store failed scrapes
+failed_scrapes = []
 
-def extract_teams(soup):
+
+def extract_teams(soup, verbose=True):
     """Extracts home team and away team from the correct elements."""
-    print("Extracting teams...")
+    if verbose:
+        print("Extracting teams...")
 
     # Find all team name elements
     team_elements = soup.find_all("div", class_="team_name m-t")
@@ -48,9 +50,10 @@ def extract_teams(soup):
     return home_team, away_team
 
 
-def extract_league_and_year(soup):
+def extract_league_and_year(soup, verbose=True):
     """Extracts league name and season year separately."""
-    print("Extracting league and year...")
+    if verbose:
+        print("Extracting league and year...")
 
     competition_div = soup.find("div", class_="competition")
     if not competition_div:
@@ -69,9 +72,10 @@ def extract_league_and_year(soup):
     return league_name, year_text
 
 
-def extract_week(soup):
+def extract_week(soup, verbose=True):
     """Extracts the match week as an integer."""
-    print("Extracting match week...")
+    if verbose:
+        print("Extracting match week...")
 
     week_div = soup.find("div", class_="stage")
     if not week_div:
@@ -85,16 +89,18 @@ def extract_week(soup):
     return int(match.group()) if match else None  # Convert to integer if found
 
 
-def extract_location(soup):
+def extract_location(soup, verbose=True):
     """Extracts the stadium/location."""
-    print("Extracting location...")
+    if verbose:
+        print("Extracting location...")
     venue_span = soup.find("div", class_="venue").find("span", itemprop="name")
     return venue_span.text.strip() if venue_span else None
 
 
-def extract_date(soup):
+def extract_date(soup, verbose=True):
     """Extracts match date and returns separate month (number), day, and year values."""
-    print("Extracting date...")
+    if verbose:
+        print("Extracting date...")
 
     date_div = soup.find("div", class_="playing_date")
     if not date_div:
@@ -119,9 +125,10 @@ def extract_date(soup):
         return None, None, None  # Return None values if parsing fails
 
 
-def extract_score_and_goals(soup):
+def extract_score_and_goals(soup, verbose=True):
     """Extracts match score and goals with player names and minutes by counting goal elements."""
-    print("Extracting score and goals...")
+    if verbose:
+        print("Extracting score and goals...")
     goals_list = {"home": [], "away": []}
 
     # Find all goal elements
@@ -144,14 +151,16 @@ def extract_score_and_goals(soup):
             goals_list["away"].append({"player": player, "minute": minute})
             away_score += 1  # Count away goal
 
-    print(f"Calculated Score: {home_score} - {away_score}")  # Debug print
+    if verbose:
+        print(f"Calculated Score: {home_score} - {away_score}")  # Debug print
 
     return home_score, away_score, goals_list
 
 
-def extract_players(soup):
+def extract_players(soup, verbose=True):
     """Extracts player and coach information (country, number, name, age) using table structure."""
-    print("Extracting players and coaches...")
+    if verbose:
+        print("Extracting players and coaches...")
     competitors = {
         "home": {"starters": [], "substitutes": [], "coach": {}},
         "away": {"starters": [], "substitutes": [], "coach": {}},
@@ -257,282 +266,17 @@ def extract_players(soup):
     return competitors
 
 
-def close_popups(driver):
-    """Clicks in the upper-left corner of the viewport to close pop-ups."""
-    try:
-        print("🛑 Clicking in the upper-left corner to close pop-ups...")
-
-        # Move the mouse to (10, 10) and click
-        action = ActionChains(driver)
-        action.move_by_offset(10, 10).click().perform()
-        time.sleep(0.25)  # Allow UI update
-
-        # Click again in case of multiple pop-ups
-        action.move_by_offset(10, 10).click().perform()
-
-        print("✅ Pop-ups dismissed.")
-
-    except Exception as e:
-        print(f"⚠️ Could not dismiss pop-ups: {e}")
-
-
-# Replace with your actual Footballia login credentials
-EMAIL = "jamison.pereira@gmail.com"
-PASSWORD = "rch7rnt5qfj2wgx.WAH"
-USERNAME = "jamison.pereira"
-
-
-def login_to_footballia(driver):
-    """Logs into Footballia using the dropdown login form."""
-    print("🔑 Attempting login via dropdown form...")
-
-    # Step 1: Open Footballia's main page
-    # driver.get("https://footballia.eu/")
-    WebDriverWait(driver, 10).until(
-        EC.presence_of_element_located((By.TAG_NAME, "body"))
-    )
-
-    # Step 2: Click the **SECOND** dropdown toggle button (Sign in)
-    try:
-        print("📂 Clicking the correct 'Sign in' dropdown toggle...")
-
-        # Find ALL dropdowns
-        dropdowns = driver.find_elements(
-            By.CSS_SELECTOR, "a.dropdown-toggle[data-toggle='dropdown']"
-        )
-
-        if len(dropdowns) > 1:
-            sign_in_dropdown = dropdowns[1]  # Select the SECOND dropdown
-            sign_in_dropdown.click()
-            time.sleep(0.5)  # Give time for dropdown to open
-            print("✅ Correct 'Sign in' dropdown opened.")
-        else:
-            print("⚠️ Could not find the correct dropdown.")
-            return
-
-    except Exception as e:
-        print(f"⚠️ Unable to click correct dropdown toggle: {e}")
-        return
-
-    # Step 3: Wait for the login form inside the dropdown to appear
-    try:
-        print("🕒 Waiting for login form to appear...")
-        WebDriverWait(driver, 10).until(
-            EC.visibility_of_element_located((By.ID, "new_user"))
-        )
-        print("✅ Login form found.")
-    except Exception as e:
-        print(f"⚠️ Login form did not appear: {e}")
-        return
-
-    # Step 4: Fill in login form fields
-    print("📝 Filling in login details...")
-    email_input = driver.find_element(By.ID, "user_email")
-    email_input.clear()
-    email_input.send_keys(EMAIL)
-
-    password_input = driver.find_element(By.ID, "user_password")
-    password_input.clear()
-    password_input.send_keys(PASSWORD)
-
-    # Step 5: Click the login button
-    print("🔓 Clicking login button...")
-    login_submit = driver.find_element(By.NAME, "commit")
-    login_submit.click()
-
-    # Step 6: Wait for login to complete (check for user menu presence)
-    try:
-        print("🕒 Waiting for username 'jamison.pereira' to appear in the dropdown...")
-        WebDriverWait(driver, 10).until(
-            EC.presence_of_element_located(
-                (
-                    By.XPATH,
-                    "//li[contains(@class, 'dropdown has-panel')]//a[contains(@class, 'dropdown-toggle')]/span[contains(text(), 'jamison.pereira')]",
-                )
-            )
-        )
-        print("✅ Login successful. Username found in the dropdown.")
-    except Exception as e:
-        print(f"⚠️ Login may have failed: {e}")
-
-
-def click_video_to_start_stream(driver):
-    """Clicks the video play button to start streaming."""
-    print("🎬 Attempting to start the video stream...")
-
-    try:
-        # Step 1: Wait for the video container to be present
-        print("🕒 Waiting for video container...")
-        video_container = WebDriverWait(driver, 10).until(
-            EC.presence_of_element_located((By.CLASS_NAME, "video"))
-        )
-        print("✅ Video container found.")
-
-        # Step 2: Click the play button inside JW Player
-        print("🎬 Clicking the JW Player play button...")
-        play_button = WebDriverWait(driver, 10).until(
-            EC.element_to_be_clickable((By.ID, "jwplayer_display_button"))
-        )
-        play_button.click()
-        time.sleep(3)  # Give time for video to load
-
-        print("✅ Video should now be playing.")
-
-    except Exception as e:
-        print(f"⚠️ Unable to start video: {e}")
-
-
-def check_and_click_next(driver):
-    """Checks if the match has two video files, clicks the 'Next' button if needed, and returns True if a second video exists."""
-    print("🔍 Checking if the match is divided into two files...")
-
-    try:
-        # Step 1: Locate all alert-warning messages
-        warnings = driver.find_elements(By.CLASS_NAME, "alert-warning")
-
-        for warning in warnings:
-            if "This match is divided in 2 files" in warning.text:
-                print("🟡 Match is divided into two files.")
-
-                # Step 2: Locate the "Next" button
-                try:
-                    print("⏭ Locating the 'Next' button...")
-                    next_button = WebDriverWait(driver, 5).until(
-                        EC.presence_of_element_located(
-                            (By.CSS_SELECTOR, ".jwnext button")
-                        )
-                    )
-                    print("✅ 'Next' button found.")
-
-                    # # Step 3: Ensure the button is clickable
-                    # WebDriverWait(driver, 5).until(
-                    #     EC.element_to_be_clickable((By.CSS_SELECTOR, ".jwnext button"))
-                    # )
-
-                    # Step 4: Scroll into view to make sure it's interactable
-                    driver.execute_script(
-                        "arguments[0].scrollIntoView({block: 'center'});", next_button
-                    )
-                    time.sleep(1)  # Allow repositioning
-
-                    # Step 5: Try clicking normally
-                    try:
-                        print("⏭ Clicking the 'Next' button...")
-                        next_button.click()
-                        time.sleep(3)  # Allow new video to load
-                        print("✅ Successfully clicked 'Next' button.")
-                        return True
-                    except Exception as click_exception:
-                        print(f"⚠️ Normal click failed: {click_exception}")
-
-                        # Step 6: Try JavaScript click as a backup
-                        try:
-                            print("⏭ Attempting JavaScript click on 'Next' button...")
-                            driver.execute_script("arguments[0].click();", next_button)
-                            time.sleep(3)
-                            print("✅ JavaScript click successful.")
-                            return True
-                        except Exception as js_e:
-                            print(f"❌ JavaScript click also failed: {js_e}")
-                            return False
-
-                except Exception as e:
-                    print(f"⚠️ Unable to locate 'Next' button: {e}")
-                    return False
-
-        print("✅ Match is a single file. No need to click 'Next'.")
-        return False
-
-    except Exception as e:
-        print(f"❌ Error checking for multiple video files: {e}")
-        return False
-
-
-def extract_video_link_selenium(url):
-    """Extracts video link by finding the <video> tag and its 'src' attribute."""
-    print(f"Extracting video link from {url} using Selenium...")
-
-    # Configure Selenium
-    chrome_options = Options()
-    # chrome_options.add_argument("--headless=new")  # Run without opening browser
-    chrome_options.add_argument("--disable-gpu")
-    chrome_options.add_argument("--no-sandbox")
-    chrome_options.add_argument("--disable-dev-shm-usage")
-
-    # Automatically fetch the latest ChromeDriver
-    service = Service(chrome_driver_path)  # Update with your chromedriver path
-    driver = webdriver.Chrome(service=service, options=chrome_options)
-
-    video_src = []
-
-    try:
-        print("🔄 Opening webpage...")
-        driver.get(url)
-
-        print("🕒 Sleeping for 5 seconds")
-        time.sleep(4)  # Give time for dropdown to open
-
-        close_popups(driver)
-
-        # Step 2: Log in
-        login_to_footballia(driver)
-
-        click_video_to_start_stream(driver)
-
-        # Step 3: Wait for the video player to load
-        print("🕒 Waiting for <video> tag...")
-        WebDriverWait(driver, 10).until(
-            EC.presence_of_element_located((By.TAG_NAME, "video"))
-        )
-        # Step 4: Extract the first video URL
-        print("🔍 Extracting first video link...")
-        first_video_url = driver.execute_script(
-            """
-            let video = document.querySelector('video');
-            return video ? video.src : null;
-            """
-        )
-        if first_video_url:
-            video_src.append(first_video_url)
-        time.sleep(1)
-
-        # Step 5: Check for second video and extract its URL
-        if check_and_click_next(driver):
-            print("🕒 Waiting for the second video to load...")
-            time.sleep(5)
-            WebDriverWait(driver, 10).until(
-                EC.presence_of_element_located((By.TAG_NAME, "video"))
-            )
-            print("🔍 Extracting second video link...")
-            second_video_url = driver.execute_script(
-                """
-                let video = document.querySelector('video');
-                return video ? video.src : null;
-                """
-            )
-            if second_video_url:
-                video_src.append(second_video_url)
-
-        if video_src:
-            print(f"🎥 Video Links Found: {video_src}")
-            return video_src
-        else:
-            print("⚠️ No video source found.")
-            return None
-
-    except Exception as e:
-        print(f"❌ Error extracting video link: {e}")
-        return None
-
-    finally:
-        print("🔄 Closing browser...")
-        # driver.quit()
-        print("✅ Selenium session ended.")
-
-
-def extract_game_data(url):
+def extract_game_data(url, driver, first_open, verbose=True):
     """Extracts all relevant game information from a match page."""
-    print(f"Fetching data from {url}...")
+    if verbose:
+        print(f"Fetching data from {url}...")
+
+    # Ensure the WebDriver session is still alive
+    if not is_driver_alive(driver):
+        print("⚠️ WebDriver session lost. Restarting browser...")
+        driver.quit()
+        driver = initialize_driver(chrome_driver_path)
+
     response = requests.get(url, headers=headers)
 
     if response.status_code != 200:
@@ -541,17 +285,20 @@ def extract_game_data(url):
 
     soup = BeautifulSoup(response.text, "html.parser")
 
-    home_team, away_team = extract_teams(soup)
-    league, year = extract_league_and_year(soup)
-    week = extract_week(soup)
-    location = extract_location(soup)
-    month, day, year = extract_date(soup)
-    home_score, away_score, goals = extract_score_and_goals(soup)
-    competitors = extract_players(soup)
-    video_links = extract_video_links(url, chrome_driver_path)
-    # video_links = extract_video_link_selenium(url)
+    game_url = url
+    home_team, away_team = extract_teams(soup, verbose)
+    league, year = extract_league_and_year(soup, verbose)
+    week = extract_week(soup, verbose)
+    location = extract_location(soup, verbose)
+    month, day, year = extract_date(soup, verbose)
+    home_score, away_score, goals = extract_score_and_goals(soup, verbose)
+    competitors = extract_players(soup, verbose)
+    video_links, video_count = extract_video_links(
+        url, driver, chrome_driver_path, first_open, verbose
+    )
 
     game_data = {
+        "game_url": game_url,
         "home_team": home_team,
         "away_team": away_team,
         "league": league,
@@ -561,23 +308,28 @@ def extract_game_data(url):
         "date": {"month": month, "day": day, "year": year},
         "score": {"home": home_score, "away": away_score},
         "goals": goals,
+        "video_count": video_count,
         "video_links": video_links,
         "competitors": competitors,
     }
 
-    print(f"Data extracted for {url}")
+    if verbose:
+        print(f"Data extracted for {url}")
     return game_data
 
 
 # Extract data for each match
-games = []
-for page in pages:
-    game_info = extract_game_data(page)
-    if game_info:
-        games.append(game_info)
+if __name__ == "__main__":
+    games = []
+    verbose = False
+    first_open = True
 
-# Save the data to a JSON file
-with open("match_data.json", "w", encoding="utf-8") as f:
-    json.dump(games, f, indent=4, ensure_ascii=False)
+    driver = initialize_driver(chrome_driver_path, verbose)
+    for page in pages:
+        game_info = extract_game_data(page, driver, first_open, verbose)
+        if game_info:
+            games.append(game_info)
+        first_open = False
 
-print("\nExtracted match data saved to 'match_data.json'.")
+    with open("match_data.json", "w", encoding="utf-8") as f:
+        json.dump(games, f, indent=4, ensure_ascii=False)
