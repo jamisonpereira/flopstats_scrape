@@ -1,0 +1,8 @@
+opencv-python
+Pillow
+openai
+ffmpeg-python
+python-dotenv
+requests
+beautifulsoup4
+selenium
