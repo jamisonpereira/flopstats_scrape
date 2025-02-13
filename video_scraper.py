@@ -26,6 +26,11 @@ def initialize_driver(chrome_driver_path, verbose=True):
     chrome_options.add_argument("--no-sandbox")
     chrome_options.add_argument("--disable-dev-shm-usage")
 
+    # for windows:
+    chrome_options.add_argument("--log-level=3")  # Suppresses most Chrome logs
+    chrome_options.add_argument("--enable-unsafe-webgl")  # Suppresses WebGL errors
+    chrome_options.add_argument("--ignore-certificate-errors")  # Ignores SSL warnings
+
     service = Service(chrome_driver_path)
     return webdriver.Chrome(service=service, options=chrome_options)
 
