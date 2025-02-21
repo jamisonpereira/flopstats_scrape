@@ -5,7 +5,7 @@ import datetime
 import io
 import json
 import base64
-from openai import OpenAI
+from archive.openai import OpenAI
 
 # Initialize the OpenAI client with the new interface
 client = OpenAI()

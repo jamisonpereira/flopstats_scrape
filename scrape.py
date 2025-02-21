@@ -102,8 +102,8 @@ def save_data(data, file_name):
 def main():
     print("Scraping match data from Footballia...")
     input_file = "urls/game_urls_2015_2025.csv"
-    start_date = datetime(2015, 1, 1)
-    end_date = datetime(2022, 12, 31)
+    start_date = datetime(2024, 12, 25)
+    end_date = datetime(2024, 12, 27)
 
     # Set filenames
     timestamp = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")

@@ -2,7 +2,7 @@ import os
 import cv2
 import math
 import datetime
-import openai
+import archive.openai as openai
 import io
 import json
 import base64

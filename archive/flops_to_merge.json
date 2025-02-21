@@ -1,0 +1,32 @@
+{
+  "flops": [
+    {
+      "players": [
+        {
+          "player_name": "Marc Cucurella",
+          "player_team_name": "CHE",
+          "injured": false,
+          "flop_start_video_time": 400.0,
+          "flop_end_video_time": 402.26,
+          "flop_start_game_time": "27:10",
+          "flop_end_game_time": "27:12"
+        }
+      ],
+      "referee_decisions": null
+    },
+    {
+      "players": [
+        {
+          "player_name": "Marc Cucurella",
+          "player_team_name": "Chelsea",
+          "injured": false,
+          "flop_start_video_time": 392.0,
+          "flop_end_video_time": 399.0,
+          "flop_start_game_time": "27:01",
+          "flop_end_game_time": "27:06"
+        }
+      ],
+      "referee_decisions": []
+    }
+  ]
+}
