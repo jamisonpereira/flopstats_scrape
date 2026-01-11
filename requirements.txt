@@ -1,0 +1,12 @@
+opencv-python
+Pillow
+openai
+ffmpeg-python
+python-dotenv
+requests
+beautifulsoup4
+selenium
+google-genai
+ipython
+black
+ffmpeg-python
